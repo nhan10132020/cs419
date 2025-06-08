@@ -4,10 +4,12 @@ import { useState } from "react";
 import Image from "next/image";
 
 const SEARCH_MODES = ["boolean", "vector", "lsa"];
+const TABS = ["cranfield", "vnexpress"];
 
 export default function MultiSearchPage() {
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState("boolean");
+  const [tab, setTab] = useState("cranfield");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -21,9 +23,12 @@ export default function MultiSearchPage() {
     setResults([]);
 
     try {
-      const res = await fetch(
-        `https://eternal-prime-baboon.ngrok-free.app/search/${mode}?q=${encodeURIComponent(query)}`
-      );
+      const endpoint =
+        tab === "vnexpress"
+          ? `https://eternal-prime-baboon.ngrok-free.app/search/vnexpress?q=${encodeURIComponent(query)}`
+          : `https://eternal-prime-baboon.ngrok-free.app/search/${mode}?q=${encodeURIComponent(query)}`;
+
+      const res = await fetch(endpoint);
       if (!res.ok) throw new Error("Failed to fetch results");
       const data = await res.json();
       setResults(data.docs || []);
@@ -37,14 +42,13 @@ export default function MultiSearchPage() {
   return (
     <main className="min-h-screen bg-[#e9f1fb] text-[#003366] font-sans py-10 px-4 flex justify-center">
       <div className="relative w-full max-w-5xl bg-white rounded-md shadow-lg border border-blue-300 p-8">
-        {/* Logo top right */}
+        {/* Logo */}
         <div className="absolute top-6 right-6">
           <Image
             src="/Logo_UIT.jpg"
             alt="UIT Logo"
             width={70}
             height={70}
-            className=""
             priority
           />
         </div>
@@ -56,6 +60,24 @@ export default function MultiSearchPage() {
           Chọn chế độ tìm kiếm và nhập truy vấn bên dưới.
         </p>
 
+        {/* Tab Switcher */}
+        <div className="flex justify-center mb-6 space-x-6">
+          {TABS.map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`px-5 py-2 text-sm font-medium rounded-t ${
+                tab === t
+                  ? "bg-white border-b-2 border-blue-600 text-blue-600"
+                  : "text-gray-500 hover:text-blue-600"
+              }`}
+            >
+              {t === "cranfield" ? "Cranfield" : "VNExpress"}
+            </button>
+          ))}
+        </div>
+
+        {/* Search Form */}
         <form
           onSubmit={handleSearch}
           className="mb-8 space-y-4"
@@ -63,25 +85,27 @@ export default function MultiSearchPage() {
         >
           <input
             type="text"
-            placeholder="Nhập truy vấn tìm kiếm..."
+            placeholder={`Nhập truy vấn tìm kiếm...`}
             className="w-full px-5 py-3 border border-blue-200 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
 
           <div className="flex flex-col md:flex-row gap-4">
-            <select
-              value={mode}
-              onChange={(e) => setMode(e.target.value)}
-              className="px-4 py-3 border border-blue-200 rounded shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none"
-              // Remove default arrow with appearance-none
-            >
-              {SEARCH_MODES.map((m) => (
-                <option key={m} value={m}>
-                  {m.toUpperCase()} Search
-                </option>
-              ))}
-            </select>
+            {/* Only show mode selector for Cranfield */}
+            {tab === "cranfield" && (
+              <select
+                value={mode}
+                onChange={(e) => setMode(e.target.value)}
+                className="px-4 py-3 border border-blue-200 rounded shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none"
+              >
+                {SEARCH_MODES.map((m) => (
+                  <option key={m} value={m}>
+                    {m.toUpperCase()} Search
+                  </option>
+                ))}
+              </select>
+            )}
 
             <button
               type="submit"
@@ -93,12 +117,14 @@ export default function MultiSearchPage() {
           </div>
         </form>
 
+        {/* Error */}
         {error && (
           <div className="text-red-600 mb-4 text-center text-sm font-medium">
             {error}
           </div>
         )}
 
+        {/* Results */}
         <div className="space-y-6">
           {results.map((doc, index) => (
             <div
@@ -106,9 +132,13 @@ export default function MultiSearchPage() {
               className="bg-[#f4faff] border border-blue-100 p-4 rounded shadow-sm"
             >
               <h2 className="text-sm font-semibold text-[#004080] mb-1">
-                Tài liệu #{index + 1}
+                {tab === "cranfield" ? `Tài liệu #${index + 1}` : doc.title || `Kết quả #${index + 1}`}
               </h2>
-              <p className="text-sm whitespace-pre-wrap">{doc}</p>
+              <p className="text-sm whitespace-pre-wrap">
+                {typeof doc === "string"
+                  ? doc
+                  : doc.snippet || doc.summary || doc.content || ""}
+              </p>
             </div>
           ))}
 
