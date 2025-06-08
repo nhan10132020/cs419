@@ -13,6 +13,7 @@ export default function MultiSearchPage() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [topK, setTopK] = useState(10);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -25,8 +26,8 @@ export default function MultiSearchPage() {
     try {
       const endpoint =
         tab === "vnexpress"
-          ? `https://eternal-prime-baboon.ngrok-free.app/search/vnexpress?q=${encodeURIComponent(query)}`
-          : `https://eternal-prime-baboon.ngrok-free.app/search/${mode}?q=${encodeURIComponent(query)}`;
+          ? `https://eternal-prime-baboon.ngrok-free.app/search/vnexpress?q=${encodeURIComponent(query)}&top_n=${topK}`
+          : `https://eternal-prime-baboon.ngrok-free.app/search/${mode}?q=${encodeURIComponent(query)}&top_n=${topK}`;
 
       const res = await fetch(endpoint);
       if (!res.ok) throw new Error("Failed to fetch results");
@@ -71,6 +72,7 @@ export default function MultiSearchPage() {
                 setResults([]);
                 setError("");
                 setLoading(false);
+                setTopK(10);
               }}
               className={`px-5 py-2 text-sm font-medium rounded-t ${
                 tab === t
@@ -112,6 +114,23 @@ export default function MultiSearchPage() {
                 ))}
               </select>
             )}
+
+            {/* Top K Selector */}
+            <div className="flex items-center gap-2">
+              <select
+                id="topK"
+                value={topK}
+                onChange={(e) => setTopK(Number(e.target.value))}
+                className="px-4 py-3 border border-blue-200 rounded shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none"
+              >
+                {[10, 15, 20, 25, 30 ,35 ,40 ,45, 50].map((k) => (
+                  <option key={k} value={k}>
+                    Top {k}
+                  </option>
+                ))}
+              </select>
+            </div>
+
 
             <button
               type="submit"
