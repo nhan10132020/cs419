@@ -65,7 +65,13 @@ export default function MultiSearchPage() {
           {TABS.map((t) => (
             <button
               key={t}
-              onClick={() => setTab(t)}
+              onClick={() => {
+                setTab(t);
+                setQuery("");
+                setResults([]);
+                setError("");
+                setLoading(false);
+              }}
               className={`px-5 py-2 text-sm font-medium rounded-t ${
                 tab === t
                   ? "bg-white border-b-2 border-blue-600 text-blue-600"
@@ -132,12 +138,23 @@ export default function MultiSearchPage() {
               className="bg-[#f4faff] border border-blue-100 p-4 rounded shadow-sm"
             >
               <h2 className="text-sm font-semibold text-[#004080] mb-1">
-                {tab === "cranfield" ? `Tài liệu #${index + 1}` : doc.title || `Kết quả #${index + 1}`}
+                {`Tài liệu #${index + 1}`}
               </h2>
               <p className="text-sm whitespace-pre-wrap">
-                {typeof doc === "string"
-                  ? doc
-                  : doc.snippet || doc.summary || doc.content || ""}
+                {tab === "vnexpress" ? (
+                  <a
+                    href={doc.url}
+                    className="text-blue-600 hover:underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {doc.title}
+                  </a>
+                ) : (
+                  <span>
+                    {doc}
+                  </span>
+                )}
               </p>
             </div>
           ))}
