@@ -163,7 +163,7 @@ export default function MultiSearchPage() {
                 {tab === "vnexpress" ? (
                   <a
                     href={doc.url}
-                    className="text-blue-600 hover:underline"
+                    className="text-blue-600 underline"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
